@@ -4,6 +4,8 @@ import { getQueryAdminInsightsSiteContentTool } from './adminInsights/querySiteC
 import { getQueryAdminInsightsTsEventsTool } from './adminInsights/queryTsEvents.js';
 import { getSearchContentTool } from './contentExploration/searchContent.js';
 import { getListExtractRefreshTasksTool } from './extractRefreshTasks/listExtractRefreshTasks.js';
+import { getGetFlowTool } from './flows/getFlow/getFlow.js';
+import { getListFlowsTool } from './flows/listFlows/listFlows.js';
 import { getGetDatasourceMetadataTool } from './getDatasourceMetadata/getDatasourceMetadata.js';
 import { getListDatasourcesTool } from './listDatasources/listDatasources.js';
 import { getListProjectsTool } from './projects/listProjects.js';
@@ -34,6 +36,8 @@ export const webToolFactories = [
   getListExtractRefreshTasksTool,
   getListUsersTool,
   getQueryDatasourceTool,
+  getListFlowsTool,
+  getGetFlowTool,
   getListAllPulseMetricDefinitionsTool,
   getListPulseMetricDefinitionsFromDefinitionIdsTool,
   getListPulseMetricsFromMetricDefinitionIdTool,
