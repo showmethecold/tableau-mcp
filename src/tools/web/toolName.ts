@@ -12,6 +12,8 @@ export const webToolNames = [
   'get-workbook',
   'get-view',
   'get-flow',
+  'list-flow-runs',
+  'list-flow-tasks',
   'get-view-data',
   'get-view-image',
   'get-custom-view-data',
@@ -61,7 +63,7 @@ export const webToolGroups = {
     'get-custom-view-data',
     'get-custom-view-image',
   ],
-  flow: ['list-flows', 'get-flow'],
+  flow: ['list-flows', 'get-flow', 'list-flow-runs', 'list-flow-tasks'],
   pulse: [
     'list-all-pulse-metric-definitions',
     'list-pulse-metric-definitions-from-definition-ids',
