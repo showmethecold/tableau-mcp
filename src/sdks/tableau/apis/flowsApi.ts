@@ -7,8 +7,70 @@ import {
   flowRunSchema,
   flowSchema,
 } from '../types/flow.js';
+import { runFlowJobResponseSchema } from '../types/job.js';
 import { paginationSchema } from '../types/pagination.js';
 import { paginationParameters } from './paginationParameters.js';
+
+/**
+ * Request body for "Run Flow Now". Note `flowId` is required INSIDE the body in
+ * addition to the URI path — Tableau returns 400 if the body omits it. The tool
+ * derives both from one input id so they cannot diverge.
+ */
+const runFlowNowRequestSchema = z.object({
+  flowRunSpec: z.object({
+    flowId: z.string(),
+    runMode: z.enum(['full', 'incremental']).optional(),
+    flowParameterSpecs: z
+      .object({
+        flowParameterSpec: z.array(
+          z.object({
+            parameterId: z.string(),
+            overrideValue: z.string(),
+          }),
+        ),
+      })
+      .optional(),
+    flowOutputSteps: z
+      .object({
+        flowOutputStep: z.array(z.object({ id: z.string() })),
+      })
+      .optional(),
+  }),
+});
+
+/**
+ * Run Flow Now
+ * POST /api/api-version/sites/site-id/flows/flow-id/run
+ * Runs the specified flow on demand (all output steps unless a subset is given),
+ * returning the async background job. Requires Data Management + Prep Conductor.
+ * Tableau Cloud scope: tableau:flows:run
+ * @see https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api_ref_flow.htm#run_flow_now
+ */
+const runFlowNowEndpoint = makeEndpoint({
+  method: 'post',
+  path: '/sites/:siteId/flows/:flowId/run',
+  alias: 'runFlowNow',
+  description:
+    'Runs the specified flow on demand and returns the async background job (job id + flow run id).',
+  parameters: [
+    {
+      name: 'siteId',
+      type: 'Path',
+      schema: z.string(),
+    },
+    {
+      name: 'flowId',
+      type: 'Path',
+      schema: z.string(),
+    },
+    {
+      name: 'body',
+      type: 'Body',
+      schema: runFlowNowRequestSchema,
+    },
+  ],
+  response: runFlowJobResponseSchema,
+});
 
 const queryFlowsForSiteEndpoint = makeEndpoint({
   method: 'get',
@@ -114,6 +176,7 @@ const flowsApi = makeApi([
   queryFlowEndpoint,
   queryFlowConnectionsEndpoint,
   getFlowRunsEndpoint,
+  runFlowNowEndpoint,
 ]);
 
 export const flowsApis = [...flowsApi] as const satisfies ZodiosEndpointDefinitions;

@@ -4,6 +4,7 @@ import { AxiosRequestConfig } from '../../../utils/axios.js';
 import { flowsApis } from '../apis/flowsApi.js';
 import { RestApiCredentials } from '../restApi.js';
 import { Flow, FlowConnection, FlowOutputStep, FlowRun } from '../types/flow.js';
+import { RunFlowJob } from '../types/job.js';
 import { Pagination } from '../types/pagination.js';
 import AuthenticatedMethods from './authenticatedMethods.js';
 
@@ -39,7 +40,7 @@ export default class FlowsMethods extends AuthenticatedMethods<typeof flowsApis>
     pageNumber,
   }: {
     siteId: string;
-    filter: string;
+    filter?: string;
     sort?: string;
     pageSize?: number;
     pageNumber?: number;
@@ -136,5 +137,56 @@ export default class FlowsMethods extends AuthenticatedMethods<typeof flowsApis>
       ...this.authHeader,
     });
     return response.flowRuns.flowRuns ?? [];
+  };
+
+  /**
+   * Runs the specified flow on demand ("Run Flow Now") and returns the async
+   * background job. By default every output step runs; pass `outputStepIds` to
+   * run a subset. `runMode` defaults to `full` server-side.
+   *
+   * Required scopes: `tableau:flows:run`
+   * Requires Data Management + Tableau Prep Conductor; Run Now must be enabled
+   * on the site.
+   *
+   * @param siteId - The Tableau site ID
+   * @param flowId - The ID of the flow to run (sent in BOTH the URI and the body)
+   * @param runMode - Optional `full` | `incremental`
+   * @param outputStepIds - Optional subset of output step IDs to run
+   * @param parameterSpecs - Optional flow parameter overrides
+   * @link https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api_ref_flow.htm#run_flow_now
+   */
+  runFlowNow = async ({
+    siteId,
+    flowId,
+    runMode,
+    outputStepIds,
+    parameterSpecs,
+  }: {
+    siteId: string;
+    flowId: string;
+    runMode?: 'full' | 'incremental';
+    outputStepIds?: string[];
+    parameterSpecs?: Array<{ parameterId: string; overrideValue: string }>;
+  }): Promise<RunFlowJob> => {
+    const raw = await this._apiClient.runFlowNow(
+      {
+        flowRunSpec: {
+          // flowId is required in the body in addition to the URI path.
+          flowId,
+          ...(runMode && { runMode }),
+          ...(parameterSpecs && parameterSpecs.length > 0
+            ? { flowParameterSpecs: { flowParameterSpec: parameterSpecs } }
+            : {}),
+          ...(outputStepIds && outputStepIds.length > 0
+            ? { flowOutputSteps: { flowOutputStep: outputStepIds.map((id) => ({ id })) } }
+            : {}),
+        },
+      },
+      {
+        params: { siteId, flowId },
+        ...this.authHeader,
+      },
+    );
+    return raw.job;
   };
 }
