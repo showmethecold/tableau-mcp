@@ -271,6 +271,18 @@ describe('Config', () => {
     expect(config.breakGlassDisableGlobally).toBe(true);
   });
 
+  it('should set flowWriteToolsEnabled to false by default', () => {
+    const config = new Config();
+    expect(config.flowWriteToolsEnabled).toBe(false);
+  });
+
+  it('should set flowWriteToolsEnabled to true when specified', () => {
+    vi.stubEnv('FLOW_WRITE_TOOLS_ENABLED', 'true');
+
+    const config = new Config();
+    expect(config.flowWriteToolsEnabled).toBe(true);
+  });
+
   describe('HTTP server config parsing', () => {
     it('should set sslKey to default when SSL_KEY is not set', () => {
       const config = new Config();

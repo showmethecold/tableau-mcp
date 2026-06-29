@@ -69,6 +69,11 @@ export class Config extends BaseConfig {
   isHyperforce: boolean;
   breakGlassDisableGlobally: boolean;
   adminToolsEnabled: boolean;
+  // Gates the content-MUTATING flow run tools (run-flow, run-flow-task).
+  // Default off: these tools change site state for other users because a run
+  // consumes Prep Conductor capacity and can overwrite outputs, so operators
+  // must opt in.
+  flowWriteToolsEnabled: boolean;
 
   constructor() {
     super();
@@ -131,6 +136,7 @@ export class Config extends BaseConfig {
       IS_HYPERFORCE: isHyperforce,
       BREAK_GLASS_DISABLE_GLOBALLY: breakGlassDisableGlobally,
       ADMIN_TOOLS_ENABLED: adminToolsEnabled,
+      FLOW_WRITE_TOOLS_ENABLED: flowWriteToolsEnabled,
     } = cleansedVars;
 
     let jwtUsername = '';
@@ -264,6 +270,7 @@ export class Config extends BaseConfig {
     this.isHyperforce = isHyperforce === 'true';
     this.breakGlassDisableGlobally = breakGlassDisableGlobally === 'true';
     this.adminToolsEnabled = adminToolsEnabled === 'true';
+    this.flowWriteToolsEnabled = flowWriteToolsEnabled === 'true';
 
     this.auth = isAuthType(auth) ? auth : this.oauth.enabled ? 'oauth' : 'pat';
     this.transport = isTransport(transport) ? transport : this.oauth.enabled ? 'http' : 'stdio';

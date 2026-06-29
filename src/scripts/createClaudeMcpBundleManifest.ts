@@ -629,6 +629,15 @@ const envVars = {
     required: false,
     sensitive: false,
   },
+  FLOW_WRITE_TOOLS_ENABLED: {
+    includeInUserConfig: false,
+    type: 'boolean',
+    title: 'Enable content-mutating flow MCP tools',
+    description:
+      'When "true", registers the content-MUTATING flow run tools (run-flow, run-flow-task). Defaults to "false".',
+    required: false,
+    sensitive: false,
+  },
   ADMIN_GATE_CACHE_TTL_MINUTES: {
     includeInUserConfig: false,
     type: 'string',

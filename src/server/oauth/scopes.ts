@@ -21,6 +21,9 @@ export type McpScope =
   | 'tableau:mcp:view:read'
   | 'tableau:mcp:view:download'
   | 'tableau:mcp:flow:read'
+  // Run a flow on demand (run-flow, run-flow-task). Executing a flow consumes
+  // Prep Conductor capacity but does not alter a schedule definition.
+  | 'tableau:mcp:flow:run'
   | 'tableau:mcp:pulse:read'
   | 'tableau:mcp:insight:create'
   | 'tableau:mcp:tasks:read'
@@ -31,8 +34,10 @@ export type TableauApiScope =
   | 'tableau:viz_data_service:read'
   | 'tableau:views:download'
   | 'tableau:flows:read'
+  | 'tableau:flows:run'
   | 'tableau:flow_connections:read'
   | 'tableau:flow_runs:read'
+  | 'tableau:flow_tasks:run'
   | 'tableau:insight_definitions_metrics:read'
   | 'tableau:insight_metrics:read'
   | 'tableau:metric_subscriptions:read'
@@ -145,6 +150,25 @@ const toolScopeMap: Record<
   'list-flow-tasks': {
     mcp: ['tableau:mcp:flow:read'],
     api: new Set(['tableau:flow_tasks:read', 'tableau:mcp_site_settings:read']),
+  },
+  // Read a single flow run task by id (not gated by FLOW_WRITE_TOOLS_ENABLED).
+  'get-flow-task': {
+    mcp: ['tableau:mcp:flow:read'],
+    api: new Set(['tableau:flow_tasks:read', 'tableau:mcp_site_settings:read']),
+  },
+  // Mutating flow tools (gated by FLOW_WRITE_TOOLS_ENABLED). `flows:read` is
+  // included alongside the write scope so the bounded-context flow check
+  // (resourceAccessChecker.isFlowAllowed) can fetch the flow when a PROJECT_IDS
+  // / TAGS context is active.
+  'run-flow': {
+    mcp: ['tableau:mcp:flow:run'],
+    api: new Set(['tableau:flows:run', 'tableau:flows:read', 'tableau:mcp_site_settings:read']),
+  },
+  'run-flow-task': {
+    // Task-id only — no flow fetch, so no flows:read. Fails closed under a
+    // bounded context (cannot prove the task's flow is in the allowed set).
+    mcp: ['tableau:mcp:flow:run'],
+    api: new Set(['tableau:flow_tasks:run', 'tableau:mcp_site_settings:read']),
   },
   'query-datasource': {
     mcp: ['tableau:mcp:datasource:read'],
@@ -287,6 +311,14 @@ function getEnabledToolNames(): Set<WebToolName> {
     enabledTools.delete('query-admin-insights-site-content');
     enabledTools.delete('query-admin-insights-job-performance');
     enabledTools.delete('get-stale-content-report');
+  }
+
+  // The content-mutating flow tools are opt-in. Removing them here also drops
+  // their (run/write) mcp + api scopes from the advertised set and the
+  // WWW-Authenticate guidance, mirroring the adminToolsEnabled pattern.
+  if (!config.flowWriteToolsEnabled) {
+    enabledTools.delete('run-flow');
+    enabledTools.delete('run-flow-task');
   }
 
   return enabledTools;
