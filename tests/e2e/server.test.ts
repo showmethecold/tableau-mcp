@@ -6,6 +6,7 @@ import { buildVariant } from './build.js';
 import { McpClient } from './mcpClient.js';
 
 const serverVersion = pkg.version;
+const flowWriteTools: ReadonlyArray<WebToolName> = ['run-flow', 'run-flow-task'];
 
 describe('server', () => {
   beforeAll(setEnv);
@@ -52,6 +53,11 @@ describe('server', () => {
       // Filter out admin-only tools if admin tools are not enabled
       if (process.env.ADMIN_TOOLS_ENABLED !== 'true') {
         expectedToolNames = expectedToolNames.filter((name) => !adminOnlyTools.includes(name));
+      }
+
+      // Filter out content-mutating flow tools unless explicitly enabled
+      if (process.env.FLOW_WRITE_TOOLS_ENABLED !== 'true') {
+        expectedToolNames = expectedToolNames.filter((name) => !flowWriteTools.includes(name));
       }
 
       expect(names).toEqual(expect.arrayContaining(expectedToolNames));
@@ -131,6 +137,13 @@ describe('server', () => {
       if (process.env.ADMIN_TOOLS_ENABLED !== 'true') {
         expectedWebToolNames = expectedWebToolNames.filter(
           (name) => !adminOnlyTools.includes(name),
+        );
+      }
+
+      // Filter out content-mutating flow tools unless explicitly enabled
+      if (process.env.FLOW_WRITE_TOOLS_ENABLED !== 'true') {
+        expectedWebToolNames = expectedWebToolNames.filter(
+          (name) => !flowWriteTools.includes(name),
         );
       }
 

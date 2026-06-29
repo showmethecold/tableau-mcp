@@ -42,6 +42,7 @@ export function getDefaultEnv(): EnvValues {
     'CONNECTED_APP_CLIENT_ID',
     'CONNECTED_APP_SECRET_ID',
     'CONNECTED_APP_SECRET_VALUE',
+    'FLOW_WRITE_TOOLS_ENABLED',
   ]);
 }
 

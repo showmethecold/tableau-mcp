@@ -438,6 +438,21 @@ Enables admin-only tools that require site administrator permissions.
 
 <hr />
 
+## `FLOW_WRITE_TOOLS_ENABLED`
+
+Enables the content-**mutating** Tableau Prep flow run tools. These tools change site state for other users because a run consumes Tableau Prep Conductor capacity and can overwrite outputs, so they are opt-in.
+
+- Default: `false`
+- When `true`, enables:
+  - [`run-flow`](../../tools/flows/run-flow.md) — run a flow on demand (Run Flow Now)
+  - [`run-flow-task`](../../tools/flows/run-flow-task.md) — run an existing scheduled task now (Run Flow Task)
+- When `false` (default), these tools are not registered and their run OAuth scopes (`tableau:mcp:flow:run` and the corresponding `tableau:flows:run` / `tableau:flow_tasks:run` API scopes) are not advertised.
+- These tools require **Data Management with Tableau Prep Conductor**, and the site's **Run Now** setting must be enabled. They honor the caller's flow permissions and the server's `INCLUDE_PROJECT_IDS` / `INCLUDE_TAGS` bounded context.
+- Known REST API minimums are preflighted before mutation (`run-flow`: 3.14+). License, site-setting, deployment, and permission failures are surfaced from Tableau's REST error details.
+- The read-only flow tools (`list-flows`, `get-flow`, `list-flow-runs`, `list-flow-tasks`, `get-flow-task`) are **not** gated by this flag.
+
+<hr />
+
 ## `ADMIN_GATE_CACHE_TTL_MINUTES`
 
 TTL (in minutes) for caches used by admin-only tools. Affects:
