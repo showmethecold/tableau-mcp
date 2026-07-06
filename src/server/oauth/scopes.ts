@@ -31,6 +31,7 @@ export type TableauApiScope =
   | 'tableau:viz_data_service:read'
   | 'tableau:views:download'
   | 'tableau:flows:read'
+  | 'tableau:flows:download'
   | 'tableau:flow_connections:read'
   | 'tableau:flow_runs:read'
   | 'tableau:insight_definitions_metrics:read'
@@ -127,6 +128,16 @@ const toolScopeMap: Record<
       'tableau:flows:read',
       'tableau:flow_connections:read',
       'tableau:flow_runs:read',
+      'tableau:mcp_site_settings:read',
+    ]),
+  },
+  'describe-flow': {
+    mcp: ['tableau:mcp:flow:read'],
+    api: new Set([
+      // flows:read resolves the flow's identity (name/project/owner) for the summary;
+      // flows:download authorizes the experimental document endpoint.
+      'tableau:flows:read',
+      'tableau:flows:download',
       'tableau:mcp_site_settings:read',
     ]),
   },
